@@ -19,7 +19,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "typeorm": "cross-env NODE_ENV=development ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js --config console/ormconfig.ts"
+    "typeorm": "cross-env NODE_ENV=development ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js --config console/dboptions.ts"
   },
   "dependencies": {
     "@nestjs/common": "^7.0.0",
@@ -28,10 +28,13 @@
     "@nestjs/platform-fastify": "^7.4.4",
     "@nestjs/swagger": "^4.6.1",
     "@nestjs/typeorm": "^7.1.4",
+    "bcrypt": "^5.0.0",
     "class-transformer": "^0.3.1",
     "class-validator": "^0.12.2",
     "crypto": "^1.0.1",
+    "dayjs": "^1.9.4",
     "deepmerge": "^4.2.2",
+    "dotenv": "^8.2.0",
     "fastify-swagger": "^3.4.0",
     "lodash": "^4.17.20",
     "mysql": "^2.18.1",
@@ -45,6 +48,7 @@
     "@nestjs/cli": "^7.0.0",
     "@nestjs/schematics": "^7.0.0",
     "@nestjs/testing": "^7.0.0",
+    "@types/bcrypt": "^3.0.0",
     "@types/express": "^4.17.3",
     "@types/jest": "26.0.10",
     "@types/lodash": "^4.14.162",

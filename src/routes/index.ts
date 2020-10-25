@@ -1,4 +1,4 @@
-import { ContentModule } from '@/content/content.module';
+import { ContentModule } from '@/modules/content/content.module';
 import { Routes } from 'nest-router';
 
 export const routes: Routes = [

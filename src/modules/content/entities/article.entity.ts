@@ -1,11 +1,15 @@
+import { time } from '@/core';
+import dayjs from 'dayjs';
 import {
     BaseEntity,
     Column,
+    CreateDateColumn,
     Entity,
     JoinTable,
     ManyToMany,
     OneToMany,
     PrimaryGeneratedColumn,
+    UpdateDateColumn,
 } from 'typeorm';
 import { Category } from './category.entity';
 import { Comment } from './comment.entity';
@@ -48,5 +52,21 @@ export class Article extends BaseEntity {
     @OneToMany(() => Comment, (comment) => comment.article, { cascade: true })
     comments!: Comment[];
 
-    userCount?: number;
+    @CreateDateColumn({
+        comment: '创建时间',
+        transformer: {
+            from: (date) => time({ date }).format('YYYY-MM-DD HH:mm:ss'),
+            to: (date) => date,
+        },
+    })
+    created_at!: dayjs.Dayjs;
+
+    @UpdateDateColumn({
+        comment: '更新时间',
+        transformer: {
+            from: (date) => time({ date }).format('YYYY-MM-DD HH:mm:ss'),
+            to: (date) => date,
+        },
+    })
+    updated_at!: dayjs.Dayjs;
 }

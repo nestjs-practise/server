@@ -1,4 +1,4 @@
-import { SecurityModule } from '@/security/security.module';
+import { SecurityModule } from '@/modules/security/security.module';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as constollerMaps from './controllers';

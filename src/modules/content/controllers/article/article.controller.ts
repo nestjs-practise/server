@@ -1,10 +1,10 @@
+import { BaseController } from '@/core/base/controller';
 import {
     CreateArticleDto,
     QueryArticleDto,
     UpdateArticleDto,
-} from '@/content/dtos';
-import { ArticleService } from '@/content/services';
-import { BaseController } from '@/core/base/controller';
+} from '@/modules/content/dtos';
+import { ArticleService } from '@/modules/content/services';
 import {
     Body,
     Controller,

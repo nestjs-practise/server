@@ -79,7 +79,7 @@ module.exports = {
             {
                 vars: 'all',
                 args: 'none',
-                ignoreRestSiblings: false,
+                ignoreRestSiblings: true,
             },
         ],
     },

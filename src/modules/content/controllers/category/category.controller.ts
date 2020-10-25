@@ -1,6 +1,6 @@
-import { CreateCategoryDto, UpdateCategoryDto } from '@/content/dtos';
-import { CategoryService } from '@/content/services';
 import { BaseController } from '@/core/base/controller';
+import { CreateCategoryDto, UpdateCategoryDto } from '@/modules/content/dtos';
+import { CategoryService } from '@/modules/content/services';
 import {
     Body,
     Controller,
