@@ -7,7 +7,6 @@ import {
     srcPath,
 } from '@/core';
 
-// import { userSubscribers } from '@/modules/user';
 export const database: ConfigRegister<DbConfig> = () => ({
     default: env('DATABASE_NAME', 'mysql'),
     enabled: ['mysql2'],
@@ -38,13 +37,13 @@ export const database: ConfigRegister<DbConfig> = () => ({
     ],
     common: {
         dropSchema: false,
-        synchronize: true,
+        synchronize: false,
         logging: ['error'],
         entities: [srcPath('modules/**/entities/**/*.entity{.ts,.js}', false)],
         subscribers: [
             srcPath('modules/**/subscribers/**/*.subscriber{.ts,.js}', false),
         ],
-        migrations: [databasePath('migration/*{.ts,.js}', false)],
+        migrations: [databasePath('migration/**/*{.ts,.js}', false)],
         seeds: [databasePath('seeder/**/*.seed{.js,.ts}', false)],
         factories: [databasePath('factories/**/*.factory{.js,.ts}', false)],
         cli: {

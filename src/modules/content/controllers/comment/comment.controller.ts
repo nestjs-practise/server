@@ -1,6 +1,6 @@
+import { BaseController } from '@/core';
 import { CreateCommentDto } from '@/modules/content/dtos';
 import { CommentService } from '@/modules/content/services';
-import { BaseController } from '@/core/base/controller';
 import {
     Body,
     Controller,

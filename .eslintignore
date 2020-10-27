@@ -1,5 +1,6 @@
-.vscode/*
+.vscode/
 .history
+back
 dist
 node_modules
 back

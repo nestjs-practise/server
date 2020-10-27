@@ -1,4 +1,4 @@
-export * from './base/controller';
+export * from './base';
 export * from './constants';
 export * from './core.module';
 export * from './decorators';

@@ -51,6 +51,7 @@ module.exports = {
         'guard-for-in': 0,
         'no-underscore-dangle': 0,
         'import/no-extraneous-dependencies': 0,
+        'no-plusplus': 0,
 
         // Typescript
         '@typescript-eslint/no-empty-interface': 0,

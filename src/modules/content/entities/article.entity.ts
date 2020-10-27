@@ -1,5 +1,4 @@
 import { time } from '@/core';
-import dayjs from 'dayjs';
 import {
     BaseEntity,
     Column,
@@ -22,7 +21,7 @@ export class Article extends BaseEntity {
     @Column({ comment: '文章标题' })
     title!: string;
 
-    @Column({ comment: '文章内容' })
+    @Column({ comment: '文章内容', type: 'longtext' })
     body!: string;
 
     @Column({ comment: '文章描述', nullable: true })
@@ -30,6 +29,21 @@ export class Article extends BaseEntity {
 
     @Column({ comment: '关键字', type: 'simple-array', nullable: true })
     keywords?: string[];
+
+    @Column({ comment: '是否发布', default: false })
+    isPublished?: boolean;
+
+    @Column({
+        comment: '发布时间',
+        type: 'varchar',
+        nullable: true,
+        transformer: {
+            from: (date) =>
+                date ? time({ date }).format('YYYY-MM-DD HH:mm:ss') : null,
+            to: (date?: Date | null) => date || null,
+        },
+    })
+    published_at?: Date | null;
 
     /**
      * 文章关联的分类
@@ -59,7 +73,7 @@ export class Article extends BaseEntity {
             to: (date) => date,
         },
     })
-    created_at!: dayjs.Dayjs;
+    created_at!: Date;
 
     @UpdateDateColumn({
         comment: '更新时间',
@@ -68,5 +82,5 @@ export class Article extends BaseEntity {
             to: (date) => date,
         },
     })
-    updated_at!: dayjs.Dayjs;
+    updated_at!: Date;
 }

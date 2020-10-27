@@ -1,4 +1,4 @@
-import { BaseController } from '@/core/base/controller';
+import { BaseController } from '@/core';
 import {
     CreateArticleDto,
     QueryArticleDto,

@@ -54,11 +54,11 @@ export class ArticleService {
     }
 
     async update(updateDto: UpdateArticleDto) {
-        const { id, categories, ...createData } = updateDto;
-        const data: Omit<UpdateArticleDto, 'id' | 'categories'> = {
-            ...createData,
+        const { categories, ...updateData } = updateDto;
+        const data: Omit<UpdateArticleDto, 'categories'> = {
+            ...updateData,
         };
-        const article = await this.findOneOrFail(id);
+        const article = await this.findOneOrFail(updateData.id);
         if (categories) {
             const categorieItems = await this.categoryRepository.findByIds(
                 categories,
@@ -70,10 +70,10 @@ export class ArticleService {
                 .addAndRemove(categorieItems, article.categories);
         }
         if (Object.keys(data).length > 0) {
-            await this.articleRepository.update(id, data);
+            await this.articleRepository.save(data);
         }
 
-        return await this.findOneOrFail(id);
+        return await this.findOneOrFail(data.id);
     }
 
     async delete(id: string) {

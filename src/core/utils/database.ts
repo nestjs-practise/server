@@ -4,7 +4,7 @@
  * Homepage     : https://gkr.io
  * My Blog      : https://lichnow.com
  * Date         : 2020-03-01 23:19:16 +0800
- * LastEditTime : 2020-10-26 01:31:02 +0800
+ * LastEditTime : 2020-10-27 08:12:01 +0800
  * Licensed     : MIT
  */
 
@@ -12,7 +12,7 @@ import { DynamicModule } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import merge from 'deepmerge';
 import { omit } from 'lodash';
-import { ConnectionOptions } from 'typeorm';
+import { Connection, ConnectionOptions, getConnectionManager } from 'typeorm';
 import { DbOptionsType } from '../constants';
 import {
     DbCliOptions,
@@ -30,6 +30,8 @@ import { BaseUtil, IConfigMaps } from './base';
  * @class DatabaseUtil
  */
 export class Database extends BaseUtil<DbOptionCollection[]> {
+    static subscribers: any[] = [];
+
     /**
      * 除默认连接配置字段外的自定义字段
      * nest为nest-typeorm模块的可配置字段
@@ -55,7 +57,7 @@ export class Database extends BaseUtil<DbOptionCollection[]> {
         maps: 'database',
     };
 
-    protected defaultConnect!: string;
+    protected _default!: string;
 
     protected _names: string[] = [];
 
@@ -78,11 +80,11 @@ export class Database extends BaseUtil<DbOptionCollection[]> {
             );
         // 把启用的数据库配置名写入this.names
         this.config.forEach((connect) => this._names.push(connect.name!));
-        this.defaultConnect = config.default;
+        this._default = config.default;
         // 如果启用的数据库配置名中不包含默认配置名则抛出异常
-        if (!this._names.includes(this.defaultConnect)) {
+        if (!this._names.includes(this._default)) {
             throw new Error(
-                `Default connection named ${this.defaultConnect} not exists!`,
+                `Default connection named ${this._default} not exists!`,
             );
         }
     }
@@ -97,8 +99,8 @@ export class Database extends BaseUtil<DbOptionCollection[]> {
      * @returns
      * @memberof Database
      */
-    getDefault() {
-        return this.defaultConnect;
+    get default() {
+        return this._default;
     }
 
     /**
@@ -125,46 +127,40 @@ export class Database extends BaseUtil<DbOptionCollection[]> {
      * @memberof DatabaseUtil
      */
     getOptions(type?: DbOptionsType): DbOptions[] {
-        // 去除自定义cli和nestjs的配置获取typeorm的原生配置
-        const connectOptions = this.config.map((connect) =>
-            omit(connect, [
-                ...this.customFields.cli,
-                ...this.customFields.nest,
-            ]),
-        ) as ConnectionOptions[];
-        // 如果没有传入类型则返回原生配置
-        if (!type) return connectOptions;
-        switch (type) {
-            // 返回原生配置
-            case DbOptionsType.CONNECTION:
-                return connectOptions;
-            // 返回用于自定义CLI的配置
-            case DbOptionsType.CLI:
-                return this.config.map((connect) =>
-                    omit(connect, this.customFields.nest),
-                ) as DbCliOptions[];
-            // 返回用于nestjs连接数据的配置
-            // 以为nestjs中的默认连接是不配置名称的,所以给默认连接去掉名称
-            // 添加autoLoadEntities
-            // 由于entity在autoLoadEntities后自动加载,subscriber由提供者方式注册,所以去除这两者
-            case DbOptionsType.NEST:
-                return this.config.map((connect) => {
-                    const all = {
-                        ...omit(connect, this.customFields.cli),
-                        autoLoadEntities: true,
-                    };
-                    const { entities, subscribers, ...connectConfig } = all;
-                    if (connectConfig.name === this.defaultConnect) {
-                        const { name, ...withoutNameConfig } = connectConfig;
-                        return withoutNameConfig;
-                    }
-                    return connectConfig;
-                }) as DbModuleOptions[];
-            case DbOptionsType.CONFIG:
-                return this.config;
-            default:
-                return connectOptions;
+        // 返回原生配置
+        if (!type || type === DbOptionsType.CONNECTION) {
+            // 去除自定义cli和nestjs的配置获取typeorm的原生配置
+            return this.config.map((option) =>
+                omit(option, [
+                    ...this.customFields.cli,
+                    ...this.customFields.nest,
+                ]),
+            ) as ConnectionOptions[];
         }
+        // 返回用于自定义CLI的配置
+        if (type === DbOptionsType.CLI) {
+            return this.config.map((option) =>
+                omit(option, this.customFields.nest),
+            ) as DbCliOptions[];
+        }
+        // 返回用于nestjs连接数据的配置
+        // 添加autoLoadEntities
+        // 由于entity在autoLoadEntities后自动加载,subscriber由提供者方式注册,所以去除这两者
+        if (type === DbOptionsType.NEST) {
+            return this.config.map((option) => {
+                const all = {
+                    ...omit(option, this.customFields.cli),
+                    autoLoadEntities: true,
+                };
+                const { entities, subscribers, ...nestOption } = all;
+                if (option.name === this._default) {
+                    const { name, ...nameNone } = nestOption;
+                    return nameNone;
+                }
+                return nestOption;
+            }) as DbModuleOptions[];
+        }
+        return this.config;
     }
 
     /**
@@ -179,17 +175,18 @@ export class Database extends BaseUtil<DbOptionCollection[]> {
      * @memberof DatabaseUtil
      */
     getOption(name?: string, type?: DbOptionsType): DbOptions {
-        if (name && !this.names.includes(name)) {
-            throw new Error(`Connection named ${name} not exists!`);
+        let findName: string | undefined = name ?? this._default;
+
+        if (type === DbOptionsType.NEST) {
+            findName = name === this._default ? undefined : name;
         }
-        let option: DbOptions | undefined;
-        if (!name && type === DbOptionsType.NEST) {
-            option = this.getOptions(type).find((item) => !item.name);
-        }
-        const realName = name ?? this.getDefault();
-        option = this.getOptions(type).find((item) => item.name === realName);
+        const option = this.getOptions(type).find(
+            (item) => item.name === findName,
+        );
         if (!option) {
-            throw new Error(`Connection named ${name}'s option not exists!`);
+            throw new Error(
+                `Connection named ${findName}'s option not exists!`,
+            );
         }
         return option;
     }
@@ -204,5 +201,48 @@ export class Database extends BaseUtil<DbOptionCollection[]> {
         return this.getOptions(DbOptionsType.NEST).map((connection) =>
             TypeOrmModule.forRoot(connection),
         );
+    }
+
+    /** ****************************************** CLI方法 **************************************** */
+
+    /**
+     * 创建一个临时连接
+     * 主要用于CLI操作
+     *
+     * @param {string} [name]
+     * @returns {Promise<Connection>}
+     * @memberof DatabaseUtil
+     */
+    async createConnection(name?: string): Promise<Connection> {
+        const option = this.getOption(name);
+        return getConnectionManager()
+            .create(option as ConnectionOptions)
+            .connect();
+    }
+
+    /**
+     * 关闭外键检测,防止数据注入出错
+     *
+     * @param {Connection} connection
+     * @param {boolean} [enabled=false]
+     * @returns {Promise<Connection>}
+     * @memberof DatabaseUtil
+     */
+    async resetForeignKey(
+        connection: Connection,
+        enabled = true,
+    ): Promise<Connection> {
+        const { type } = connection.driver.options;
+        let key: string;
+        let query: string;
+        if (type === 'sqlite') {
+            key = enabled ? 'OFF' : 'ON';
+            query = `PRAGMA foreign_keys = ${key};`;
+        } else {
+            key = enabled ? '0' : '1';
+            query = `SET FOREIGN_KEY_CHECKS = ${key};`;
+        }
+        await connection.query(query);
+        return connection;
     }
 }

@@ -1,24 +1,10 @@
+import { BaseSubscriber } from '@/core';
 import crypto from 'crypto';
-import {
-    Connection,
-    EntitySubscriberInterface,
-    EventSubscriber,
-    InsertEvent,
-} from 'typeorm';
+import { EventSubscriber, InsertEvent } from 'typeorm';
 import { Category } from '../entities';
 
 @EventSubscriber()
-export class CategorySubscriber implements EntitySubscriberInterface<Category> {
-    /**
-     * 在当前链接中添加
-     *
-     * @param {Connection} connection
-     * @memberof CategorySubscriber
-     */
-    constructor(connection: Connection) {
-        connection.subscribers.push(this);
-    }
-
+export class CategorySubscriber extends BaseSubscriber<Category> {
     listenTo() {
         return Category;
     }

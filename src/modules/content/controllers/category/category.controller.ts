@@ -1,4 +1,4 @@
-import { BaseController } from '@/core/base/controller';
+import { BaseController } from '@/core';
 import { CreateCategoryDto, UpdateCategoryDto } from '@/modules/content/dtos';
 import { CategoryService } from '@/modules/content/services';
 import {
